@@ -3,16 +3,15 @@ import pandas as pd
 import plotly.express as px
 import model
 
-st.set_page_config(page_title="Elite FX Dashboard V3", layout="wide")
+st.set_page_config(page_title="Elite FX Dashboard V3.1", layout="wide")
 
-st.title("🌍 Scholarship Elite Currency Intelligence V3")
+st.title("🌍 Global Currency Intelligence System V3.1")
 
-# ---------------- TABS ----------------
-tab1, tab2 = st.tabs(["💱 Converter", "📊 Global Insights"])
+tab1, tab2 = st.tabs(["💱 Converter", "📊 Global Map"])
 
-# ---------------- TAB 1 ----------------
+# ---------------- CONVERTER ----------------
 with tab1:
-    st.subheader("💱 Smart Currency Converter")
+    st.subheader("💱 Smart Converter")
 
     query = st.text_input("Enter query (e.g. 100 PKR to USD)")
 
@@ -28,14 +27,14 @@ with tab1:
             col2.metric("To", f"{res['result']} {res['to']}")
             col3.metric("Rate", res["rate"])
 
-            st.markdown("### 🧠 Insights")
+            st.subheader("🧠 Insights")
 
-            for line in res["insight"]:
-                st.info(line)
+            for i in res["insight"]:
+                st.info(i)
 
-# ---------------- TAB 2 ----------------
+# ---------------- MAP + CARDS ----------------
 with tab2:
-    st.subheader("🌍 Global Currency Strength Map")
+    st.subheader("🌍 World Currency Strength Map")
 
     data = model.get_country_strength_map()
 
@@ -49,8 +48,7 @@ with tab2:
         locations="Country",
         locationmode="country names",
         color="Strength",
-        color_continuous_scale="Viridis",
-        title="Global Currency Strength Index"
+        color_continuous_scale="Viridis"
     )
 
     st.plotly_chart(fig, use_container_width=True)
