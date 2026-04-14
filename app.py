@@ -29,13 +29,12 @@ with tab1:
             col3.metric("Rate", res["rate"])
 
             st.subheader("🧠 Insights")
-
             for i in res["insight"]:
                 st.info(i)
 
-# ---------------- EXPLORER ----------------
+# ---------------- MAP ----------------
 with tab2:
-    st.subheader("🌍 World Currency Map")
+    st.subheader("🌍 World Currency Strength Map")
 
     df = pd.DataFrame(model.get_country_strength_map().items(), columns=["Country", "Strength"])
 
@@ -49,7 +48,8 @@ with tab2:
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("🌍 Country Currency Cards")
+    # ---------------- FLAG CARDS ----------------
+    st.subheader("🌍 Currency Explorer (Flag Cards)")
 
     flags = {
         "Pakistan":"🇵🇰","India":"🇮🇳","China":"🇨🇳","Japan":"🇯🇵","United States":"🇺🇸",
@@ -62,17 +62,23 @@ with tab2:
 
     cols = st.columns(3)
 
-    for i, (k, v) in enumerate(model.CURRENCY_INFO.items()):
-        country = v["country"]
-        currency = k
-        name = v["name"]
+    for i, (code, info) in enumerate(model.CURRENCY_INFO.items()):
+        country = info["country"]
         flag = flags.get(country, "🌍")
 
         with cols[i % 3]:
             st.markdown(f"""
-            ## {flag} {country}
-            💱 **{currency}**
+            <div style="
+                padding:15px;
+                border-radius:15px;
+                background:#111827;
+                margin-bottom:10px;
+                color:white;
+            ">
             
-            🏦 {name}
-            ---
-            """)
+            <h3>{flag} {country}</h3>
+            <p>💱 <b>{code}</b></p>
+            <p>🏦 {info['name']}</p>
+
+            </div>
+            """, unsafe_allow_html=True)
