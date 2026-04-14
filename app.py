@@ -3,22 +3,24 @@ import pandas as pd
 import plotly.express as px
 import model
 
-st.set_page_config(page_title="Currency Engine", layout="wide")
+st.set_page_config(page_title="Scholarship FX Dashboard", layout="wide")
 
-st.title("🌍 Global Currency Intelligence Engine")
+st.title("🌍 Global Currency Intelligence Dashboard")
+st.markdown("Scholarship Premium V2 — Finance + Data + Intelligence")
 
-st.markdown("Type: **100 PKR to USD / 50 yen to euro / 10 canada to rupees**")
+# ---------------- INPUT ----------------
+st.subheader("💱 Currency Converter")
 
-# ---------------- CONVERTER ----------------
-st.subheader("💱 Smart Converter")
+query = st.text_input("Enter query (e.g. 100 PKR to USD)")
 
-user_input = st.text_input("Enter your query")
+if st.button("Analyze"):
+    res = model.convert(query)
 
-if st.button("Convert"):
-    try:
-        res = model.convert_text(user_input)
-
-        st.success("Conversion Successful")
+    if "error" in res:
+        st.error(res["error"])
+        st.info("Try: 100 pkr to usd | 50 yen to euro | 10 canada to rupees")
+    else:
+        st.success("Analysis Complete")
 
         col1, col2, col3 = st.columns(3)
 
@@ -26,41 +28,18 @@ if st.button("Convert"):
         col2.metric("To", f"{res['result']} {res['to']}")
         col3.metric("Rate", res["rate"])
 
-        st.markdown("### 🌍 Currency Details")
+        st.subheader("🧠 Intelligence Layer")
 
-        full = model.get_currency_full_list()
+        for i in res["insight"]:
+            st.info(i)
 
-        st.write(full.get(res["from"], "Unknown"))
-        st.write(full.get(res["to"], "Unknown"))
+# ---------------- CURRENCY STRENGTH ----------------
+st.subheader("📊 Currency Strength Index")
 
-    except Exception as e:
-        st.error(str(e))
-        st.info("Try: 10 pkr to usd | 50 yen to euro | 100 canada to rupees")
+df = pd.DataFrame(model.get_strength_data().items(), columns=["Currency", "Strength"])
+df = df.sort_values("Strength")
 
-
-# ---------------- LIST ----------------
-st.subheader("🌐 Supported Currencies")
-
-for code, info in model.get_currency_full_list().items():
-    st.write(f"💱 **{code} → {info}**")
-
-
-# ---------------- CHART ----------------
-st.subheader("📊 Expensiveness Index")
-
-data = model.get_expensiveness_data()
-
-df = pd.DataFrame({
-    "Currency": list(data.keys()),
-    "Index": list(data.values())
-}).sort_values("Index")
-
-fig = px.bar(
-    df,
-    x="Index",
-    y="Currency",
-    orientation="h",
-    title="Global Currency Strength Comparison"
-)
+fig = px.bar(df, x="Strength", y="Currency", orientation="h",
+             title="Global Currency Strength Comparison")
 
 st.plotly_chart(fig, use_container_width=True)
