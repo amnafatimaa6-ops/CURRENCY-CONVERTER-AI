@@ -35,17 +35,18 @@ if st.button("Convert"):
 
     except Exception as e:
         st.error(str(e))
+        st.info("Try: 10 pkr to usd | 50 yen to euro | 100 canada to rupees")
 
 
-# ---------------- FULL LIST ----------------
+# ---------------- LIST ----------------
 st.subheader("🌐 Supported Currencies")
 
 for code, info in model.get_currency_full_list().items():
     st.write(f"💱 **{code} → {info}**")
 
 
-# ---------------- EXPENSIVENESS ----------------
-st.subheader("📊 Expensiveness Index (Cheapest → Costliest)")
+# ---------------- CHART ----------------
+st.subheader("📊 Expensiveness Index")
 
 data = model.get_expensiveness_data()
 
