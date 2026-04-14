@@ -25,25 +25,25 @@ CURRENCY_MAP = {
     "iran": "IRR"
 }
 
-# 🌍 Currency Intelligence Layer
+# 🌍 Economic strength (proxy index)
 CURRENCY_INFO = {
-    "PKR": {"name": "Pakistani Rupee", "strength": 2},
-    "INR": {"name": "Indian Rupee", "strength": 3},
-    "CNY": {"name": "Chinese Yuan", "strength": 6},
-    "JPY": {"name": "Japanese Yen", "strength": 7},
-    "USD": {"name": "US Dollar", "strength": 9},
-    "GBP": {"name": "British Pound", "strength": 9},
-    "EUR": {"name": "Euro", "strength": 8},
-    "CAD": {"name": "Canadian Dollar", "strength": 8},
-    "CHF": {"name": "Swiss Franc", "strength": 10},
-    "SAR": {"name": "Saudi Riyal", "strength": 5},
-    "QAR": {"name": "Qatari Riyal", "strength": 6},
-    "TRY": {"name": "Turkish Lira", "strength": 4},
-    "HUF": {"name": "Hungarian Forint", "strength": 4},
-    "PLN": {"name": "Polish Złoty", "strength": 5},
-    "RON": {"name": "Romanian Leu", "strength": 4},
-    "MVR": {"name": "Maldivian Rufiyaa", "strength": 5},
-    "IRR": {"name": "Iranian Rial", "strength": 1}
+    "PKR": {"name": "Pakistan", "strength": 2},
+    "INR": {"name": "India", "strength": 3},
+    "CNY": {"name": "China", "strength": 6},
+    "JPY": {"name": "Japan", "strength": 7},
+    "USD": {"name": "USA", "strength": 9},
+    "GBP": {"name": "UK", "strength": 9},
+    "EUR": {"name": "Eurozone", "strength": 8},
+    "CAD": {"name": "Canada", "strength": 8},
+    "CHF": {"name": "Switzerland", "strength": 10},
+    "SAR": {"name": "Saudi", "strength": 5},
+    "QAR": {"name": "Qatar", "strength": 6},
+    "TRY": {"name": "Turkey", "strength": 4},
+    "HUF": {"name": "Hungary", "strength": 4},
+    "PLN": {"name": "Poland", "strength": 5},
+    "RON": {"name": "Romania", "strength": 4},
+    "MVR": {"name": "Maldives", "strength": 5},
+    "IRR": {"name": "Iran", "strength": 1}
 }
 
 
@@ -54,7 +54,7 @@ def get_rate(from_c, to_c):
     return data["rates"][to_c]
 
 
-# 🧠 SMART PARSER (ROBUST)
+# 🧠 parser
 def parse_query(text):
     text = text.lower()
 
@@ -82,7 +82,7 @@ def parse_query(text):
     return amount, found[0], found[1]
 
 
-# 💱 MAIN ENGINE
+# 💱 conversion + intelligence
 def convert(query):
     parsed = parse_query(query)
 
@@ -94,24 +94,24 @@ def convert(query):
     rate = get_rate(from_c, to_c)
     result = round(amount * rate, 2)
 
-    from_strength = CURRENCY_INFO[from_c]["strength"]
-    to_strength = CURRENCY_INFO[to_c]["strength"]
+    f_strength = CURRENCY_INFO[from_c]["strength"]
+    t_strength = CURRENCY_INFO[to_c]["strength"]
 
-    comparison = round(to_strength / from_strength, 2)
+    ratio = round(t_strength / f_strength, 2)
 
     insight = []
 
-    insight.append(
-        f"{CURRENCY_INFO[to_c]['name']} is {comparison}x stronger than {CURRENCY_INFO[from_c]['name']} (based on economic index)."
-    )
+    insight.append(f"{CURRENCY_INFO[to_c]['name']} is {ratio}x stronger than {CURRENCY_INFO[from_c]['name']}.")
 
-    if comparison > 1:
-        insight.append("Your destination currency has higher purchasing power 💰")
+    if ratio > 1:
+        insight.append("Destination country has higher purchasing power 💰")
     else:
-        insight.append("Your source currency holds stronger value 💵")
+        insight.append("Source currency has stronger economic value 💵")
 
-    if amount > 1000:
-        insight.append("High-value international transaction 🌍")
+    if amount >= 1000:
+        insight.append("High-value financial transaction detected 🌍")
+    elif amount <= 20:
+        insight.append("Small-scale personal spending 💸")
 
     return {
         "from": from_c,
@@ -119,10 +119,11 @@ def convert(query):
         "amount": amount,
         "rate": rate,
         "result": result,
-        "insight": insight
+        "insight": insight,
+        "ratio": ratio
     }
 
 
-# 📊 DASHBOARD DATA
+# 📊 strength dataset
 def get_strength_data():
     return {k: v["strength"] for k, v in CURRENCY_INFO.items()}
