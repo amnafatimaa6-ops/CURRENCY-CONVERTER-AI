@@ -44,7 +44,7 @@ CURRENCY_INFO = {
     "JPY": {"name": "Japanese Yen", "country": "Japan", "strength": 7},
     "USD": {"name": "US Dollar", "country": "United States", "strength": 9},
     "GBP": {"name": "British Pound", "country": "United Kingdom", "strength": 9},
-    "EUR": {"name": "Euro", "country": "Europe", "strength": 8},
+    "EUR": {"name": "Euro", "country": "Eurozone", "strength": 8},
     "CAD": {"name": "Canadian Dollar", "country": "Canada", "strength": 8},
     "CHF": {"name": "Swiss Franc", "country": "Switzerland", "strength": 10},
     "AUD": {"name": "Australian Dollar", "country": "Australia", "strength": 8},
@@ -65,11 +65,9 @@ CURRENCY_INFO = {
     "IRR": {"name": "Iranian Rial", "country": "Iran", "strength": 1}
 }
 
-
 # 🌍 MAP DATA
 def get_country_strength_map():
     return {v["country"]: v["strength"] for v in CURRENCY_INFO.values()}
-
 
 # 🌐 FX API
 def get_rate(from_c, to_c):
@@ -77,12 +75,10 @@ def get_rate(from_c, to_c):
     data = requests.get(url).json()
     return data["rates"][to_c]
 
-
 # 🧠 PARSER
 def parse_query(text):
     text = text.lower()
 
-    import re
     amount = re.search(r"\d+(\.\d+)?", text)
     if not amount:
         return None
@@ -105,7 +101,6 @@ def parse_query(text):
         return None
 
     return amount, found[0], found[1]
-
 
 # 💱 CONVERTER
 def convert(query):
@@ -137,7 +132,6 @@ def convert(query):
         "result": result,
         "insight": insight
     }
-
 
 # 📊 DATA
 def get_strength_data():
