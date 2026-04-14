@@ -6,16 +6,18 @@ import model
 st.set_page_config(page_title="Global FX Intelligence", layout="wide")
 
 st.title("🌍 Global Currency Intelligence Engine")
-st.write("Type like: **100 PKR to euro / 50 dollars to yen / 200 canada to rupees**")
 
-# ---------------- CONVERTER ----------------
+# ---------------- INPUT ----------------
 st.subheader("💱 Smart Converter")
 
-user_input = st.text_input("Enter your query")
+user_input = st.text_input("Enter query (e.g. 100 PKR to euro)")
 
 if st.button("Convert 🚀"):
     try:
         res = model.convert_text(user_input)
+
+        from_country = model.get_currency_country(res["from"])
+        to_country = model.get_currency_country(res["to"])
 
         st.success("Conversion Successful")
 
@@ -25,31 +27,40 @@ if st.button("Convert 🚀"):
         col2.metric("To", f"{res['result']} {res['to']}")
         col3.metric("Rate", res["rate"])
 
+        # 🌍 NEW SECTION: COUNTRY INFO
+        st.markdown("### 🌍 Currency Country Mapping")
+
+        st.write(f"**{res['from']} belongs to → {from_country}**")
+        st.write(f"**{res['to']} belongs to → {to_country}**")
+
     except Exception as e:
         st.error(str(e))
 
 
-# ---------------- AVAILABLE CURRENCIES ----------------
+# ---------------- CURRENCY LIST ----------------
 st.subheader("🌐 Supported Currencies")
 
-st.write(model.get_currency_list())
+st.write(list(set(model.CURRENCY_MAP.values())))
 
 
 # ---------------- EXPENSIVENESS CHART ----------------
-st.subheader("📊 Country Expensiveness Index")
+st.subheader("📊 Cost of Living Index")
 
 data = model.get_expensiveness_data()
 
 df = pd.DataFrame({
     "Currency": list(data.keys()),
-    "Expensiveness": list(data.values())
+    "Index": list(data.values())
 })
+
+df = df.sort_values("Index", ascending=True)
 
 fig = px.bar(
     df,
-    x="Currency",
-    y="Expensiveness",
-    title="Which currencies represent higher cost of living power"
+    x="Index",
+    y="Currency",
+    orientation="h",
+    title="Cheapest → Most Expensive Currencies"
 )
 
 st.plotly_chart(fig, use_container_width=True)
