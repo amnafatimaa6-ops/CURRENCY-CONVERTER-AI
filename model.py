@@ -1,7 +1,7 @@
 import re
 import requests
 
-# 🌍 Country → Currency map
+# 🌍 Country → Currency mapping
 CURRENCY_MAP = {
     "pakistan": "PKR",
     "india": "INR",
@@ -30,25 +30,25 @@ CURRENCY_MAP = {
     "iran": "IRR"
 }
 
-# 🌍 Currency → Country mapping (DISPLAY)
-CURRENCY_TO_COUNTRY = {
-    "IRR": "Iran",
-    "MVR": "Maldives",
-    "CNY": "China",
-    "CAD": "Canada",
-    "JPY": "Japan",
-    "PKR": "Pakistan",
-    "GBP": "United Kingdom",
-    "HUF": "Hungary",
-    "PLN": "Poland",
-    "TRY": "Turkey",
-    "QAR": "Qatar",
-    "RON": "Romania",
-    "EUR": "Eurozone (Germany, France, Spain, Italy)",
-    "SAR": "Saudi Arabia",
-    "INR": "India",
-    "CHF": "Switzerland",
-    "USD": "United States"
+# 🌍 FULL CURRENCY DISPLAY INFO
+CURRENCY_FULL_INFO = {
+    "IRR": "Iranian Rial → Iran 🇮🇷",
+    "MVR": "Maldivian Rufiyaa → Maldives 🇲🇻",
+    "CNY": "Chinese Yuan (Renminbi) → China 🇨🇳",
+    "CAD": "Canadian Dollar → Canada 🇨🇦",
+    "JPY": "Japanese Yen → Japan 🇯🇵",
+    "PKR": "Pakistani Rupee → Pakistan 🇵🇰",
+    "GBP": "British Pound Sterling → United Kingdom 🇬🇧",
+    "HUF": "Hungarian Forint → Hungary 🇭🇺",
+    "PLN": "Polish Złoty → Poland 🇵🇱",
+    "TRY": "Turkish Lira → Turkey 🇹🇷",
+    "QAR": "Qatari Riyal → Qatar 🇶🇦",
+    "RON": "Romanian Leu → Romania 🇷🇴",
+    "EUR": "Euro → Eurozone (Germany, France, Spain, Italy) 🇪🇺",
+    "SAR": "Saudi Riyal → Saudi Arabia 🇸🇦",
+    "INR": "Indian Rupee → India 🇮🇳",
+    "CHF": "Swiss Franc → Switzerland 🇨🇭",
+    "USD": "US Dollar → United States 🇺🇸"
 }
 
 # 📊 Expensiveness index
@@ -72,14 +72,13 @@ EXPENSIVE_INDEX = {
     "IRR": 1
 }
 
-
-# 🧠 parse input
+# 🧠 Parse user input
 def parse_query(text: str):
     text = text.lower()
 
     amount = re.search(r"\d+(\.\d+)?", text)
     if not amount:
-        raise ValueError("No amount found")
+        raise ValueError("No amount found in input")
 
     amount = float(amount.group())
 
@@ -91,12 +90,12 @@ def parse_query(text: str):
     found = list(dict.fromkeys(found))
 
     if len(found) < 2:
-        raise ValueError("Need 2 currencies")
+        raise ValueError("Need 2 currencies or countries in query")
 
     return amount, found[0], found[1]
 
 
-# 🌐 API
+# 🌐 Live FX API
 def get_rate(from_c, to_c):
     url = f"https://open.er-api.com/v6/latest/{from_c}"
     data = requests.get(url).json()
@@ -107,7 +106,7 @@ def get_rate(from_c, to_c):
     return data["rates"][to_c]
 
 
-# 💱 convert
+# 💱 Convert
 def convert_text(query):
     amount, f, t = parse_query(query)
     rate = get_rate(f, t)
@@ -126,6 +125,6 @@ def get_expensiveness_data():
     return EXPENSIVE_INDEX
 
 
-# 🌍 currency → country display
-def get_currency_display_list():
-    return CURRENCY_TO_COUNTRY
+# 🌍 full currency list (UI)
+def get_currency_full_list():
+    return CURRENCY_FULL_INFO
