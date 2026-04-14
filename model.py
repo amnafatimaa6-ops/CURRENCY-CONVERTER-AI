@@ -1,20 +1,13 @@
 import re
 import requests
 
-# 🌍 Country → Currency mapping
+# 🌍 Country → Currency map
 CURRENCY_MAP = {
     "pakistan": "PKR",
-    "pkr": "PKR",
-
     "india": "INR",
-    "inr": "INR",
-
     "china": "CNY",
     "japan": "JPY",
-
     "usa": "USD",
-    "us": "USD",
-
     "uk": "GBP",
 
     "germany": "EUR",
@@ -27,35 +20,35 @@ CURRENCY_MAP = {
 
     "saudi": "SAR",
     "qatar": "QAR",
-
     "turkey": "TRY",
+
     "hungary": "HUF",
-    "romania": "RON",
     "poland": "PLN",
+    "romania": "RON",
 
     "maldives": "MVR",
     "iran": "IRR"
 }
 
-# 🌍 NEW: Currency → Country mapping (REVERSE LOOKUP)
+# 🌍 Currency → Country mapping (DISPLAY)
 CURRENCY_TO_COUNTRY = {
-    "PKR": "Pakistan",
-    "INR": "India",
-    "CNY": "China",
-    "JPY": "Japan",
-    "USD": "United States",
-    "GBP": "United Kingdom",
-    "EUR": "Eurozone (Germany, France, Spain, Italy etc.)",
-    "CAD": "Canada",
-    "CHF": "Switzerland",
-    "SAR": "Saudi Arabia",
-    "QAR": "Qatar",
-    "TRY": "Turkey",
-    "HUF": "Hungary",
-    "RON": "Romania",
-    "PLN": "Poland",
+    "IRR": "Iran",
     "MVR": "Maldives",
-    "IRR": "Iran"
+    "CNY": "China",
+    "CAD": "Canada",
+    "JPY": "Japan",
+    "PKR": "Pakistan",
+    "GBP": "United Kingdom",
+    "HUF": "Hungary",
+    "PLN": "Poland",
+    "TRY": "Turkey",
+    "QAR": "Qatar",
+    "RON": "Romania",
+    "EUR": "Eurozone (Germany, France, Spain, Italy)",
+    "SAR": "Saudi Arabia",
+    "INR": "India",
+    "CHF": "Switzerland",
+    "USD": "United States"
 }
 
 # 📊 Expensiveness index
@@ -80,7 +73,7 @@ EXPENSIVE_INDEX = {
 }
 
 
-# 🧠 Parse input
+# 🧠 parse input
 def parse_query(text: str):
     text = text.lower()
 
@@ -109,12 +102,12 @@ def get_rate(from_c, to_c):
     data = requests.get(url).json()
 
     if "rates" not in data:
-        raise Exception("API failed")
+        raise Exception("API error")
 
     return data["rates"][to_c]
 
 
-# 💱 Convert
+# 💱 convert
 def convert_text(query):
     amount, f, t = parse_query(query)
     rate = get_rate(f, t)
@@ -133,6 +126,6 @@ def get_expensiveness_data():
     return EXPENSIVE_INDEX
 
 
-# 🌍 NEW: currency → country info
-def get_currency_country(currency_code):
-    return CURRENCY_TO_COUNTRY.get(currency_code, "Unknown")
+# 🌍 currency → country display
+def get_currency_display_list():
+    return CURRENCY_TO_COUNTRY
