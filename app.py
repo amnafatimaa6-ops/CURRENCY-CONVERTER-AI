@@ -3,43 +3,56 @@ import pandas as pd
 import plotly.express as px
 import model
 
-st.set_page_config(page_title="Scholarship FX Dashboard", layout="wide")
+st.set_page_config(page_title="Elite Currency Intelligence", layout="wide")
 
-st.title("🌍 Global Currency Intelligence Dashboard")
-st.markdown("Scholarship Premium V2 — Finance + Data + Intelligence")
+st.title("🌍 Scholarship Elite Currency Intelligence System V3")
 
-# ---------------- INPUT ----------------
-st.subheader("💱 Currency Converter")
+st.markdown("Compare currencies, purchasing power, and global financial strength.")
 
-query = st.text_input("Enter query (e.g. 100 PKR to USD)")
+# ---------------- TAB SYSTEM ----------------
+tab1, tab2 = st.tabs(["💱 Converter", "📊 Global Insights"])
 
-if st.button("Analyze"):
-    res = model.convert(query)
+# ---------------- TAB 1 ----------------
+with tab1:
+    st.subheader("💱 Smart Converter + Intelligence")
 
-    if "error" in res:
-        st.error(res["error"])
-        st.info("Try: 100 pkr to usd | 50 yen to euro | 10 canada to rupees")
-    else:
-        st.success("Analysis Complete")
+    query = st.text_input("Enter query (e.g. 100 PKR to USD)")
 
-        col1, col2, col3 = st.columns(3)
+    if st.button("Analyze"):
+        res = model.convert(query)
 
-        col1.metric("From", f"{res['amount']} {res['from']}")
-        col2.metric("To", f"{res['result']} {res['to']}")
-        col3.metric("Rate", res["rate"])
+        if "error" in res:
+            st.error(res["error"])
+        else:
+            col1, col2, col3 = st.columns(3)
 
-        st.subheader("🧠 Intelligence Layer")
+            col1.metric("From", f"{res['amount']} {res['from']}")
+            col2.metric("To", f"{res['result']} {res['to']}")
+            col3.metric("Rate", res["rate"])
 
-        for i in res["insight"]:
-            st.info(i)
+            st.markdown("### 🧠 Intelligence Layer")
 
-# ---------------- CURRENCY STRENGTH ----------------
-st.subheader("📊 Currency Strength Index")
+            for line in res["insight"]:
+                st.info(line)
 
-df = pd.DataFrame(model.get_strength_data().items(), columns=["Currency", "Strength"])
-df = df.sort_values("Strength")
+# ---------------- TAB 2 ----------------
+with tab2:
+    st.subheader("📊 Currency Strength Comparison")
 
-fig = px.bar(df, x="Strength", y="Currency", orientation="h",
-             title="Global Currency Strength Comparison")
+    df = pd.DataFrame(model.get_strength_data().items(), columns=["Currency", "Strength"])
+    df = df.sort_values("Strength")
 
-st.plotly_chart(fig, use_container_width=True)
+    fig = px.bar(
+        df,
+        x="Strength",
+        y="Currency",
+        orientation="h",
+        title="Global Currency Power Index"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("### 🌍 Insight")
+
+    st.info("Higher strength = stronger economy = higher purchasing power")
+    st.info("Switzerland, USD, GBP are top-tier global currencies")
