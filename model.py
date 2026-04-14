@@ -1,52 +1,57 @@
 import re
 import requests
 
-# 🌍 Expanded Currency Map (countries included)
+# 🌍 Currency + Country mapping
 CURRENCY_MAP = {
-    # Asia
     "pakistan": "PKR",
     "pkr": "PKR",
+
     "india": "INR",
     "inr": "INR",
+
     "china": "CNY",
     "yuan": "CNY",
+
     "japan": "JPY",
     "yen": "JPY",
-    "maldives": "MVR",
-    "mvr": "MVR",
 
-    # Middle East
-    "saudi": "SAR",
-    "saudi arabia": "SAR",
-    "qatar": "QAR",
-    "iran": "IRR",
-    "turkey": "TRY",
+    "usa": "USD",
+    "us": "USD",
+    "dollar": "USD",
+    "usd": "USD",
 
-    # Europe
-    "switzerland": "CHF",
-    "swiss": "CHF",
+    "uk": "GBP",
+    "britain": "GBP",
+    "pound": "GBP",
+
+    "euro": "EUR",
+    "eur": "EUR",
     "germany": "EUR",
     "france": "EUR",
     "spain": "EUR",
     "italy": "EUR",
-    "poland": "PLN",
+
+    "canada": "CAD",
+    "cad": "CAD",
+
+    "switzerland": "CHF",
+    "swiss": "CHF",
+
+    "saudi": "SAR",
+    "qatar": "QAR",
+
+    "turkey": "TRY",
+    "lira": "TRY",
+
     "hungary": "HUF",
     "romania": "RON",
+    "poland": "PLN",
 
-    # North America
-    "usa": "USD",
-    "us": "USD",
-    "canada": "CAD",
-
-    # Default currencies
-    "euro": "EUR",
-    "eur": "EUR",
-    "dollar": "USD",
-    "pound": "GBP",
-    "uk": "GBP"
+    "maldives": "MVR",
+    "iran": "IRR"
 }
 
-# 💰 Expensiveness index (for chart)
+# 📊 Expensiveness index (for chart)
 EXPENSIVE_INDEX = {
     "CHF": 10,
     "USD": 9,
@@ -68,42 +73,42 @@ EXPENSIVE_INDEX = {
 }
 
 
-# 🧠 PARSER
+# 🧠 Parse input text
 def parse_query(text: str):
     text = text.lower()
 
-    amount = re.search(r"\d+(\.\d+)?", text)
-    if not amount:
+    amount_match = re.search(r"\d+(\.\d+)?", text)
+    if not amount_match:
         raise ValueError("No amount found")
 
-    amount = float(amount.group())
+    amount = float(amount_match.group())
 
     found = []
-    for k, v in CURRENCY_MAP.items():
-        if k in text:
-            found.append(v)
+    for key, value in CURRENCY_MAP.items():
+        if key in text:
+            found.append(value)
 
     found = list(dict.fromkeys(found))
 
     if len(found) < 2:
-        raise ValueError("Need 2 currencies")
+        raise ValueError("Could not detect 2 currencies/countries")
 
     return amount, found[0], found[1]
 
 
-# 🌐 API
-def get_rate(from_c, to_c):
-    url = f"https://open.er-api.com/v6/latest/{from_c}"
+# 🌐 Live FX API
+def get_rate(from_currency, to_currency):
+    url = f"https://open.er-api.com/v6/latest/{from_currency}"
     data = requests.get(url).json()
 
     if "rates" not in data:
-        raise Exception("API failed")
+        raise Exception("API failed or blocked")
 
-    return data["rates"][to_c]
+    return data["rates"][to_currency]
 
 
-# 💱 conversion
-def convert_text(query):
+# 💱 Convert
+def convert_text(query: str):
     amount, f, t = parse_query(query)
     rate = get_rate(f, t)
 
@@ -116,6 +121,11 @@ def convert_text(query):
     }
 
 
-# 📊 EXPENSIVENESS DATA (for chart)
+# 📊 Chart data
 def get_expensiveness_data():
     return EXPENSIVE_INDEX
+
+
+# 🌍 Currency list for UI
+def get_currency_list():
+    return sorted(set(CURRENCY_MAP.values()))
