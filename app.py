@@ -3,12 +3,12 @@ import pandas as pd
 import plotly.express as px
 import model
 
-st.set_page_config(page_title="Global Currency Intelligence V3.2", layout="wide")
+st.set_page_config(page_title="Global Currency Intelligence V3.3", layout="wide")
 
-st.title("🌍 Global Currency Intelligence System V3.2")
+st.title("🌍 Global Currency Intelligence System V3.3")
 
 # ---------------- TABS ----------------
-tab1, tab2 = st.tabs(["💱 Converter", "📊 Global Explorer"])
+tab1, tab2 = st.tabs(["💱 Converter", "🌍 Explorer"])
 
 # ---------------- CONVERTER ----------------
 with tab1:
@@ -33,7 +33,7 @@ with tab1:
             for i in res["insight"]:
                 st.info(i)
 
-# ---------------- GLOBAL MAP + CARDS + SLIDER ----------------
+# ---------------- EXPLORER ----------------
 with tab2:
     st.subheader("🌍 World Currency Map")
 
@@ -49,26 +49,30 @@ with tab2:
 
     st.plotly_chart(fig, use_container_width=True)
 
-    st.subheader("🌍 Country Cards")
+    st.subheader("🌍 Country Currency Cards")
 
-    cols = st.columns(4)
-    for i, row in df.iterrows():
-        with cols[i % 4]:
+    flags = {
+        "Pakistan":"🇵🇰","India":"🇮🇳","China":"🇨🇳","Japan":"🇯🇵","United States":"🇺🇸",
+        "United Kingdom":"🇬🇧","Germany":"🇩🇪","France":"🇫🇷","Italy":"🇮🇹","Spain":"🇪🇸",
+        "Canada":"🇨🇦","Switzerland":"🇨🇭","Australia":"🇦🇺","Sweden":"🇸🇪",
+        "South Korea":"🇰🇷","Singapore":"🇸🇬","Malaysia":"🇲🇾","Saudi Arabia":"🇸🇦",
+        "Qatar":"🇶🇦","UAE":"🇦🇪","Turkey":"🇹🇷","Iraq":"🇮🇶","Jordan":"🇯🇴",
+        "Hungary":"🇭🇺","Poland":"🇵🇱","Romania":"🇷🇴","Maldives":"🇲🇻","Iran":"🇮🇷"
+    }
+
+    cols = st.columns(3)
+
+    for i, (k, v) in enumerate(model.CURRENCY_INFO.items()):
+        country = v["country"]
+        currency = k
+        name = v["name"]
+        flag = flags.get(country, "🌍")
+
+        with cols[i % 3]:
             st.markdown(f"""
-            ### 🌍 {row['Country']}
-            💰 Strength: **{row['Strength']}/10**
+            ## {flag} {country}
+            💱 **{currency}**
+            
+            🏦 {name}
+            ---
             """)
-
-    st.subheader("🎚️ Currency Explorer Slider")
-
-    data = model.get_country_currency_slider_data()
-
-    index = st.slider("Select Country", 0, len(data)-1, 0)
-
-    selected = data[index]
-
-    st.success(f"""
-🌍 Country: {selected['country']}
-💱 Currency: {selected['currency']}
-📌 Full Name: {selected['name']}
-""")
