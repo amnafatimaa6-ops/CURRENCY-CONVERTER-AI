@@ -1,3 +1,4 @@
+
 import re
 import requests
 
@@ -25,7 +26,7 @@ CURRENCY_MAP = {
     "iran": "IRR"
 }
 
-# 🌍 Economic strength (proxy index)
+# 🌍 Currency info
 CURRENCY_INFO = {
     "PKR": {"name": "Pakistan", "strength": 2},
     "INR": {"name": "India", "strength": 3},
@@ -33,7 +34,7 @@ CURRENCY_INFO = {
     "JPY": {"name": "Japan", "strength": 7},
     "USD": {"name": "USA", "strength": 9},
     "GBP": {"name": "UK", "strength": 9},
-    "EUR": {"name": "Eurozone", "strength": 8},
+    "EUR": {"name": "Europe", "strength": 8},
     "CAD": {"name": "Canada", "strength": 8},
     "CHF": {"name": "Switzerland", "strength": 10},
     "SAR": {"name": "Saudi", "strength": 5},
@@ -46,8 +47,33 @@ CURRENCY_INFO = {
     "IRR": {"name": "Iran", "strength": 1}
 }
 
+# 🌍 Country strength map (for choropleth)
+def get_country_strength_map():
+    return {
+        "Pakistan": 2,
+        "India": 3,
+        "China": 6,
+        "Japan": 7,
+        "United States": 9,
+        "United Kingdom": 9,
+        "Germany": 8,
+        "France": 8,
+        "Italy": 8,
+        "Spain": 8,
+        "Canada": 8,
+        "Switzerland": 10,
+        "Saudi Arabia": 5,
+        "Qatar": 6,
+        "Turkey": 4,
+        "Hungary": 4,
+        "Poland": 5,
+        "Romania": 4,
+        "Maldives": 5,
+        "Iran": 1
+    }
 
-# 🌐 FX API
+
+# 🌐 API
 def get_rate(from_c, to_c):
     url = f"https://open.er-api.com/v6/latest/{from_c}"
     data = requests.get(url).json()
@@ -82,7 +108,7 @@ def parse_query(text):
     return amount, found[0], found[1]
 
 
-# 💱 conversion + intelligence
+# 💱 convert engine
 def convert(query):
     parsed = parse_query(query)
 
@@ -99,19 +125,19 @@ def convert(query):
 
     ratio = round(t_strength / f_strength, 2)
 
-    insight = []
-
-    insight.append(f"{CURRENCY_INFO[to_c]['name']} is {ratio}x stronger than {CURRENCY_INFO[from_c]['name']}.")
+    insight = [
+        f"{CURRENCY_INFO[to_c]['name']} is {ratio}x stronger than {CURRENCY_INFO[from_c]['name']}.",
+    ]
 
     if ratio > 1:
-        insight.append("Destination country has higher purchasing power 💰")
+        insight.append("Destination currency has higher purchasing power 💰")
     else:
-        insight.append("Source currency has stronger economic value 💵")
+        insight.append("Source currency is relatively stronger 💵")
 
-    if amount >= 1000:
-        insight.append("High-value financial transaction detected 🌍")
-    elif amount <= 20:
-        insight.append("Small-scale personal spending 💸")
+    if amount > 1000:
+        insight.append("High-value global transaction 🌍")
+    elif amount < 20:
+        insight.append("Small personal spending 💸")
 
     return {
         "from": from_c,
@@ -119,11 +145,10 @@ def convert(query):
         "amount": amount,
         "rate": rate,
         "result": result,
-        "insight": insight,
-        "ratio": ratio
+        "insight": insight
     }
 
 
-# 📊 strength dataset
+# 📊 strength data
 def get_strength_data():
     return {k: v["strength"] for k, v in CURRENCY_INFO.items()}
