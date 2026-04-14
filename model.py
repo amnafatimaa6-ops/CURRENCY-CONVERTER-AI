@@ -1,7 +1,7 @@
 import re
 import requests
 
-# 🌍 Country → Currency (EXPANDED)
+# 🌍 Country → Currency (EXPANDED GLOBAL)
 CURRENCY_MAP = {
     "pakistan": "PKR",
     "india": "INR",
@@ -17,6 +17,7 @@ CURRENCY_MAP = {
     "belgium": "EUR",
     "greece": "EUR",
     "portugal": "EUR",
+    "netherlands": "EUR",
 
     "canada": "CAD",
     "switzerland": "CHF",
@@ -28,9 +29,13 @@ CURRENCY_MAP = {
     "north korea": "KPW",
     "singapore": "SGD",
     "malaysia": "MYR",
+    "thailand": "THB",
+    "indonesia": "IDR",
+    "philippines": "PHP",
 
-    "saudi": "SAR",
+    "saudi arabia": "SAR",
     "qatar": "QAR",
+    "uae": "AED",
     "turkey": "TRY",
     "iraq": "IQD",
     "jordan": "JOD",
@@ -38,20 +43,26 @@ CURRENCY_MAP = {
     "hungary": "HUF",
     "poland": "PLN",
     "romania": "RON",
+    "czech republic": "CZK",
     "maldives": "MVR",
-    "iran": "IRR"
+    "iran": "IRR",
+    "egypt": "EGP",
+    "brazil": "BRL",
+    "russia": "RUB",
+    "nigeria": "NGN",
+    "south africa": "ZAR"
 }
 
-# 🌍 Currency Intelligence Layer
+# 🌍 FULL CURRENCY INTELLIGENCE
 CURRENCY_INFO = {
     "PKR": {"name": "Pakistani Rupee", "country": "Pakistan", "strength": 2},
     "INR": {"name": "Indian Rupee", "country": "India", "strength": 3},
     "CNY": {"name": "Chinese Yuan", "country": "China", "strength": 6},
     "JPY": {"name": "Japanese Yen", "country": "Japan", "strength": 7},
-    "USD": {"name": "US Dollar", "country": "USA", "strength": 9},
-    "GBP": {"name": "British Pound", "country": "UK", "strength": 9},
+    "USD": {"name": "US Dollar", "country": "United States", "strength": 9},
+    "GBP": {"name": "British Pound", "country": "United Kingdom", "strength": 9},
 
-    "EUR": {"name": "Euro", "country": "Europe", "strength": 8},
+    "EUR": {"name": "Euro", "country": "Eurozone", "strength": 8},
     "CAD": {"name": "Canadian Dollar", "country": "Canada", "strength": 8},
     "CHF": {"name": "Swiss Franc", "country": "Switzerland", "strength": 10},
     "AUD": {"name": "Australian Dollar", "country": "Australia", "strength": 8},
@@ -62,9 +73,13 @@ CURRENCY_INFO = {
     "KPW": {"name": "North Korean Won", "country": "North Korea", "strength": 1},
     "SGD": {"name": "Singapore Dollar", "country": "Singapore", "strength": 9},
     "MYR": {"name": "Malaysian Ringgit", "country": "Malaysia", "strength": 5},
+    "THB": {"name": "Thai Baht", "country": "Thailand", "strength": 5},
+    "IDR": {"name": "Indonesian Rupiah", "country": "Indonesia", "strength": 3},
+    "PHP": {"name": "Philippine Peso", "country": "Philippines", "strength": 3},
 
     "SAR": {"name": "Saudi Riyal", "country": "Saudi Arabia", "strength": 5},
     "QAR": {"name": "Qatari Riyal", "country": "Qatar", "strength": 6},
+    "AED": {"name": "UAE Dirham", "country": "UAE", "strength": 7},
     "TRY": {"name": "Turkish Lira", "country": "Turkey", "strength": 4},
     "IQD": {"name": "Iraqi Dinar", "country": "Iraq", "strength": 2},
     "JOD": {"name": "Jordanian Dinar", "country": "Jordan", "strength": 6},
@@ -72,52 +87,22 @@ CURRENCY_INFO = {
     "HUF": {"name": "Hungarian Forint", "country": "Hungary", "strength": 4},
     "PLN": {"name": "Polish Złoty", "country": "Poland", "strength": 5},
     "RON": {"name": "Romanian Leu", "country": "Romania", "strength": 4},
+    "CZK": {"name": "Czech Koruna", "country": "Czech Republic", "strength": 6},
+
     "MVR": {"name": "Maldivian Rufiyaa", "country": "Maldives", "strength": 5},
-    "IRR": {"name": "Iranian Rial", "country": "Iran", "strength": 1}
+    "IRR": {"name": "Iranian Rial", "country": "Iran", "strength": 1},
+
+    "EGP": {"name": "Egyptian Pound", "country": "Egypt", "strength": 3},
+    "BRL": {"name": "Brazilian Real", "country": "Brazil", "strength": 5},
+    "RUB": {"name": "Russian Ruble", "country": "Russia", "strength": 5},
+    "NGN": {"name": "Nigerian Naira", "country": "Nigeria", "strength": 2},
+    "ZAR": {"name": "South African Rand", "country": "South Africa", "strength": 4}
 }
 
 
-# 🌍 MAP DATA
+# 🌍 MAP DATA (CLEAN GLOBAL)
 def get_country_strength_map():
-    return {
-        "Pakistan": 2,
-        "India": 3,
-        "China": 6,
-        "Japan": 7,
-        "United States": 9,
-        "United Kingdom": 9,
-
-        "Germany": 8,
-        "France": 8,
-        "Spain": 8,
-        "Italy": 8,
-        "Belgium": 8,
-        "Greece": 7,
-        "Portugal": 7,
-
-        "Canada": 8,
-        "Switzerland": 10,
-        "Australia": 8,
-        "Sweden": 8,
-        "Mexico": 5,
-
-        "South Korea": 7,
-        "North Korea": 1,
-        "Singapore": 9,
-        "Malaysia": 5,
-
-        "Saudi Arabia": 5,
-        "Qatar": 6,
-        "Turkey": 4,
-        "Iraq": 2,
-        "Jordan": 6,
-
-        "Hungary": 4,
-        "Poland": 5,
-        "Romania": 4,
-        "Maldives": 5,
-        "Iran": 1
-    }
+    return {v["country"]: v["strength"] for v in CURRENCY_INFO.values()}
 
 
 # 🌐 FX API
@@ -173,14 +158,15 @@ def convert(query):
     ratio = round(t["strength"] / f["strength"], 2)
 
     insight = [
-        f"{t['name']} ({t['country']}) is {ratio}x stronger than {f['name']} ({f['country']}).",
-        f"Currency Mapping: {from_c} → {f['name']} ({f['country']}) | {to_c} → {t['name']} ({t['country']})"
+        f"{f['name']} ({f['country']}) → {t['name']} ({t['country']})",
+        f"{t['name']} is {ratio}x stronger than {f['name']} in global economic index.",
+        f"Currency Pair: {from_c} → {to_c}"
     ]
 
     if ratio > 1:
-        insight.append("Destination currency has higher purchasing power 💰")
+        insight.append("Higher purchasing power in destination country 💰")
     else:
-        insight.append("Source currency holds stronger economic value 💵")
+        insight.append("Source currency has stronger value 💵")
 
     return {
         "from": from_c,
