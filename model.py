@@ -30,7 +30,7 @@ CURRENCY_MAP = {
     "iran": "IRR"
 }
 
-# 🌍 Currency → Full display name
+# 🌍 Currency → Full Info
 CURRENCY_FULL_INFO = {
     "PKR": "Pakistani Rupee → Pakistan 🇵🇰",
     "INR": "Indian Rupee → India 🇮🇳",
@@ -72,26 +72,47 @@ EXPENSIVE_INDEX = {
     "IRR": 1
 }
 
-
-# 🧠 parsing
+# 🧠 FIXED PARSER (ROBUST)
 def parse_query(text: str):
     text = text.lower()
 
-    amount = re.search(r"\d+(\.\d+)?", text)
-    if not amount:
-        raise ValueError("Enter valid amount")
+    # 💰 amount
+    amount_match = re.search(r"\d+(\.\d+)?", text)
+    if not amount_match:
+        raise ValueError("Enter amount like 10 pkr to usd")
 
-    amount = float(amount.group())
+    amount = float(amount_match.group())
+
+    # 🧹 clean text
+    cleaned = text.replace("to", " ")
+    words = cleaned.split()
 
     found = []
-    for k, v in CURRENCY_MAP.items():
-        if k in text:
-            found.append(v)
 
+    for w in words:
+        w = w.strip()
+
+        # currency code match
+        if w.upper() in CURRENCY_FULL_INFO:
+            found.append(w.upper())
+
+        # country → currency
+        if w in CURRENCY_MAP:
+            found.append(CURRENCY_MAP[w])
+
+    # remove duplicates
     found = list(dict.fromkeys(found))
 
+    # 🔥 fallback scan (fixes your error)
     if len(found) < 2:
-        raise ValueError("Need 2 currencies (e.g. 10 pkr to usd)")
+        for k, v in CURRENCY_MAP.items():
+            if k in text:
+                found.append(v)
+
+        found = list(dict.fromkeys(found))
+
+    if len(found) < 2:
+        raise ValueError("Need 2 currencies (example: 10 pkr to usd)")
 
     return amount, found[0], found[1]
 
@@ -117,11 +138,11 @@ def convert_text(query):
     }
 
 
-# 📊 chart data
+# 📊 chart
 def get_expensiveness_data():
     return EXPENSIVE_INDEX
 
 
-# 🌍 full list
+# 🌍 full names
 def get_currency_full_list():
     return CURRENCY_FULL_INFO
