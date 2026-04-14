@@ -1,22 +1,23 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from model import convert_text, get_expensiveness_data
+import model
 
 st.set_page_config(page_title="Global FX Intelligence", layout="wide")
 
-st.title("🌍 Global Currency Intelligence Dashboard")
+st.title("🌍 Global Currency Intelligence Engine")
+st.write("Type like: **100 PKR to euro / 50 dollars to yen / 200 canada to rupees**")
 
-# ---------------- LEFT: CONVERTER ----------------
+# ---------------- CONVERTER ----------------
 st.subheader("💱 Smart Converter")
 
-user_input = st.text_input("Enter query (e.g. 100 PKR to euro)")
+user_input = st.text_input("Enter your query")
 
-if st.button("Convert"):
+if st.button("Convert 🚀"):
     try:
-        res = convert_text(user_input)
+        res = model.convert_text(user_input)
 
-        st.success("Conversion Complete")
+        st.success("Conversion Successful")
 
         col1, col2, col3 = st.columns(3)
 
@@ -28,26 +29,16 @@ if st.button("Convert"):
         st.error(str(e))
 
 
-# ---------------- RIGHT: CURRENCY LIST ----------------
-st.subheader("🌐 Available Currencies")
+# ---------------- AVAILABLE CURRENCIES ----------------
+st.subheader("🌐 Supported Currencies")
 
-currencies = [
-    "PKR 🇵🇰", "INR 🇮🇳", "CNY 🇨🇳", "JPY 🇯🇵",
-    "USD 🇺🇸", "GBP 🇬🇧", "EUR 🇪🇺",
-    "CAD 🇨🇦", "CHF 🇨🇭",
-    "SAR 🇸🇦", "QAR 🇶🇦",
-    "TRY 🇹🇷", "PLN 🇵🇱",
-    "HUF 🇭🇺", "RON 🇷🇴",
-    "MVR 🇲🇻", "IRR 🇮🇷"
-]
-
-st.write(currencies)
+st.write(model.get_currency_list())
 
 
-# ---------------- CHART ----------------
-st.subheader("📊 Currency Expensiveness Index")
+# ---------------- EXPENSIVENESS CHART ----------------
+st.subheader("📊 Country Expensiveness Index")
 
-data = get_expensiveness_data()
+data = model.get_expensiveness_data()
 
 df = pd.DataFrame({
     "Currency": list(data.keys()),
