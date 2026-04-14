@@ -1,7 +1,7 @@
 import re
 import requests
 
-# 🌍 Country → Currency mapping
+# 🌍 Country → Currency
 CURRENCY_MAP = {
     "pakistan": "PKR",
     "india": "INR",
@@ -30,28 +30,28 @@ CURRENCY_MAP = {
     "iran": "IRR"
 }
 
-# 🌍 FULL CURRENCY DISPLAY INFO
+# 🌍 Currency → Full Info
 CURRENCY_FULL_INFO = {
     "IRR": "Iranian Rial → Iran 🇮🇷",
     "MVR": "Maldivian Rufiyaa → Maldives 🇲🇻",
-    "CNY": "Chinese Yuan (Renminbi) → China 🇨🇳",
+    "CNY": "Chinese Yuan → China 🇨🇳",
     "CAD": "Canadian Dollar → Canada 🇨🇦",
     "JPY": "Japanese Yen → Japan 🇯🇵",
     "PKR": "Pakistani Rupee → Pakistan 🇵🇰",
-    "GBP": "British Pound Sterling → United Kingdom 🇬🇧",
+    "GBP": "British Pound → United Kingdom 🇬🇧",
     "HUF": "Hungarian Forint → Hungary 🇭🇺",
     "PLN": "Polish Złoty → Poland 🇵🇱",
     "TRY": "Turkish Lira → Turkey 🇹🇷",
     "QAR": "Qatari Riyal → Qatar 🇶🇦",
     "RON": "Romanian Leu → Romania 🇷🇴",
-    "EUR": "Euro → Eurozone (Germany, France, Spain, Italy) 🇪🇺",
+    "EUR": "Euro → Eurozone 🇪🇺",
     "SAR": "Saudi Riyal → Saudi Arabia 🇸🇦",
     "INR": "Indian Rupee → India 🇮🇳",
     "CHF": "Swiss Franc → Switzerland 🇨🇭",
     "USD": "US Dollar → United States 🇺🇸"
 }
 
-# 📊 Expensiveness index
+# 📊 Expensiveness Index
 EXPENSIVE_INDEX = {
     "CHF": 10,
     "USD": 9,
@@ -72,30 +72,45 @@ EXPENSIVE_INDEX = {
     "IRR": 1
 }
 
-# 🧠 Parse user input
+
+# 🧠 SMART PARSER (FIXED)
 def parse_query(text: str):
     text = text.lower()
 
-    amount = re.search(r"\d+(\.\d+)?", text)
-    if not amount:
-        raise ValueError("No amount found in input")
+    # extract number
+    amount_match = re.search(r"\d+(\.\d+)?", text)
+    if not amount_match:
+        raise ValueError("No amount found")
 
-    amount = float(amount.group())
+    amount = float(amount_match.group())
+
+    # clean separators
+    cleaned = text.replace("to", " ").replace("in", " ")
+    words = cleaned.split()
 
     found = []
-    for k, v in CURRENCY_MAP.items():
-        if k in text:
-            found.append(v)
 
+    for w in words:
+        w = w.strip()
+
+        # direct currency match
+        if w.upper() in CURRENCY_FULL_INFO:
+            found.append(w.upper())
+
+        # country → currency
+        if w in CURRENCY_MAP:
+            found.append(CURRENCY_MAP[w])
+
+    # remove duplicates
     found = list(dict.fromkeys(found))
 
     if len(found) < 2:
-        raise ValueError("Need 2 currencies or countries in query")
+        raise ValueError("Invalid input. Example: 10 pkr to usd")
 
     return amount, found[0], found[1]
 
 
-# 🌐 Live FX API
+# 🌐 API
 def get_rate(from_c, to_c):
     url = f"https://open.er-api.com/v6/latest/{from_c}"
     data = requests.get(url).json()
@@ -125,6 +140,6 @@ def get_expensiveness_data():
     return EXPENSIVE_INDEX
 
 
-# 🌍 full currency list (UI)
+# 🌍 full currency info
 def get_currency_full_list():
     return CURRENCY_FULL_INFO
