@@ -84,7 +84,6 @@ def parse_query(text):
         return None
 
     amount = float(amount.group())
-
     found = []
 
     for k, v in CURRENCY_MAP.items():
@@ -132,7 +131,3 @@ def convert(query):
         "result": result,
         "insight": insight
     }
-
-# 📊 DATA
-def get_strength_data():
-    return {k: v["strength"] for k, v in CURRENCY_INFO.items()}
