@@ -1,118 +1,121 @@
-# model.py
-
 import re
 import requests
 
-# ---------- MASTER CURRENCY REGISTRY ----------
+# 🌍 Expanded Currency Map (countries included)
 CURRENCY_MAP = {
-    # Pakistan
+    # Asia
+    "pakistan": "PKR",
     "pkr": "PKR",
-    "rupee": "PKR",
-    "rupees": "PKR",
-    "pakistani rupee": "PKR",
-
-    # India
+    "india": "INR",
     "inr": "INR",
-    "indian rupee": "INR",
-
-    # China
-    "cny": "CNY",
+    "china": "CNY",
     "yuan": "CNY",
-    "renminbi": "CNY",
-
-    # Japan
-    "jpy": "JPY",
+    "japan": "JPY",
     "yen": "JPY",
+    "maldives": "MVR",
+    "mvr": "MVR",
 
-    # USA
-    "usd": "USD",
-    "dollar": "USD",
-    "dollars": "USD",
-    "us dollar": "USD",
+    # Middle East
+    "saudi": "SAR",
+    "saudi arabia": "SAR",
+    "qatar": "QAR",
+    "iran": "IRR",
+    "turkey": "TRY",
 
-    # UK
-    "gbp": "GBP",
-    "pound": "GBP",
-    "pounds": "GBP",
-    "british pound": "GBP",
-
-    # Europe (Eurozone countries)
-    "eur": "EUR",
-    "euro": "EUR",
-    "euros": "EUR",
+    # Europe
+    "switzerland": "CHF",
+    "swiss": "CHF",
     "germany": "EUR",
     "france": "EUR",
     "spain": "EUR",
     "italy": "EUR",
-
-    # Hungary
-    "hungary": "HUF",
-    "forint": "HUF",
-    "huf": "HUF",
-
-    # Romania
-    "romania": "RON",
-    "ron": "RON",
-    "leu": "RON",
-
-    # Turkey
-    "turkey": "TRY",
-    "turkish lira": "TRY",
-    "lira": "TRY",
-    "try": "TRY",
-
-    # Poland
     "poland": "PLN",
-    "pln": "PLN",
-    "zloty": "PLN",
+    "hungary": "HUF",
+    "romania": "RON",
+
+    # North America
+    "usa": "USD",
+    "us": "USD",
+    "canada": "CAD",
+
+    # Default currencies
+    "euro": "EUR",
+    "eur": "EUR",
+    "dollar": "USD",
+    "pound": "GBP",
+    "uk": "GBP"
+}
+
+# 💰 Expensiveness index (for chart)
+EXPENSIVE_INDEX = {
+    "CHF": 10,
+    "USD": 9,
+    "GBP": 9,
+    "EUR": 8,
+    "CAD": 8,
+    "JPY": 7,
+    "CNY": 6,
+    "SAR": 5,
+    "QAR": 6,
+    "TRY": 4,
+    "PLN": 5,
+    "HUF": 4,
+    "RON": 4,
+    "INR": 3,
+    "PKR": 2,
+    "MVR": 5,
+    "IRR": 1
 }
 
 
-# ---------- SMART PARSER ----------
+# 🧠 PARSER
 def parse_query(text: str):
     text = text.lower()
 
-    # extract number
-    amount_match = re.search(r"\d+(\.\d+)?", text)
-    if not amount_match:
+    amount = re.search(r"\d+(\.\d+)?", text)
+    if not amount:
         raise ValueError("No amount found")
 
-    amount = float(amount_match.group())
+    amount = float(amount.group())
 
-    # detect currencies mentioned
     found = []
+    for k, v in CURRENCY_MAP.items():
+        if k in text:
+            found.append(v)
 
-    for key, value in CURRENCY_MAP.items():
-        if key in text:
-            found.append(value)
-
-    # remove duplicates while keeping order
     found = list(dict.fromkeys(found))
 
     if len(found) < 2:
-        raise ValueError("Could not detect 2 currencies clearly")
+        raise ValueError("Need 2 currencies")
 
     return amount, found[0], found[1]
 
 
-# ---------- LIVE RATE ENGINE ----------
-def get_rate(from_currency: str, to_currency: str):
-    url = f"https://api.exchangerate.host/latest?base={from_currency}&symbols={to_currency}"
+# 🌐 API
+def get_rate(from_c, to_c):
+    url = f"https://open.er-api.com/v6/latest/{from_c}"
     data = requests.get(url).json()
 
-    return data["rates"][to_currency]
+    if "rates" not in data:
+        raise Exception("API failed")
+
+    return data["rates"][to_c]
 
 
-# ---------- CORE FUNCTION ----------
-def convert_text(query: str):
-    amount, from_curr, to_curr = parse_query(query)
-
-    rate = get_rate(from_curr, to_curr)
-    result = round(amount * rate, 2)
+# 💱 conversion
+def convert_text(query):
+    amount, f, t = parse_query(query)
+    rate = get_rate(f, t)
 
     return {
-        "input": f"{amount} {from_curr}",
-        "output": f"{result} {to_curr}",
-        "rate": rate,
-        "path": f"{from_curr} → {to_curr}"
+        "amount": amount,
+        "from": f,
+        "to": t,
+        "result": round(amount * rate, 2),
+        "rate": rate
     }
+
+
+# 📊 EXPENSIVENESS DATA (for chart)
+def get_expensiveness_data():
+    return EXPENSIVE_INDEX
