@@ -3,11 +3,12 @@ import pandas as pd
 import plotly.express as px
 import model
 
-st.set_page_config(page_title="Elite FX Dashboard V3.1", layout="wide")
+st.set_page_config(page_title="Global Currency Intelligence V3.2", layout="wide")
 
-st.title("🌍 Global Currency Intelligence System V3.1")
+st.title("🌍 Global Currency Intelligence System V3.2")
 
-tab1, tab2 = st.tabs(["💱 Converter", "📊 Global Map"])
+# ---------------- TABS ----------------
+tab1, tab2 = st.tabs(["💱 Converter", "📊 Global Explorer"])
 
 # ---------------- CONVERTER ----------------
 with tab1:
@@ -32,16 +33,11 @@ with tab1:
             for i in res["insight"]:
                 st.info(i)
 
-# ---------------- MAP + CARDS ----------------
+# ---------------- GLOBAL MAP + CARDS + SLIDER ----------------
 with tab2:
-    st.subheader("🌍 World Currency Strength Map")
+    st.subheader("🌍 World Currency Map")
 
-    data = model.get_country_strength_map()
-
-    df = pd.DataFrame({
-        "Country": list(data.keys()),
-        "Strength": list(data.values())
-    })
+    df = pd.DataFrame(model.get_country_strength_map().items(), columns=["Country", "Strength"])
 
     fig = px.choropleth(
         df,
@@ -56,10 +52,23 @@ with tab2:
     st.subheader("🌍 Country Cards")
 
     cols = st.columns(4)
-
     for i, row in df.iterrows():
         with cols[i % 4]:
             st.markdown(f"""
             ### 🌍 {row['Country']}
             💰 Strength: **{row['Strength']}/10**
             """)
+
+    st.subheader("🎚️ Currency Explorer Slider")
+
+    data = model.get_country_currency_slider_data()
+
+    index = st.slider("Select Country", 0, len(data)-1, 0)
+
+    selected = data[index]
+
+    st.success(f"""
+🌍 Country: {selected['country']}
+💱 Currency: {selected['currency']}
+📌 Full Name: {selected['name']}
+""")
