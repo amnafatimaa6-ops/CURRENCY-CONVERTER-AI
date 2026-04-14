@@ -1,25 +1,65 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
 import model
 
-st.set_page_config(page_title="AI Finance Assistant", layout="centered")
+st.set_page_config(page_title="Currency Engine", layout="wide")
 
-st.title("💬 AI Global Finance Assistant")
-st.write("Ask anything like: *Is 1000 PKR good in Europe? / 50 dollars to yen / 200 canada to rupees*")
+st.title("🌍 Global Currency Intelligence Engine")
 
-query = st.text_input("Talk to AI 💬")
+st.markdown("Type: **100 PKR to USD / 50 yen to euro / 10 canada to rupees**")
 
-if st.button("Ask"):
-    res = model.ai_engine(query)
+# ---------------- CONVERTER ----------------
+st.subheader("💱 Smart Converter")
 
-    if res["type"] == "error":
-        st.error(res["message"])
-    else:
-        st.success("AI Response")
+user_input = st.text_input("Enter your query")
 
-        st.markdown("### 💱 Result")
-        st.write(f"{res['amount']} {res['from']} → {res['result']} {res['to']}")
+if st.button("Convert"):
+    try:
+        res = model.convert_text(user_input)
 
-        st.markdown("### 🧠 AI Explanation")
+        st.success("Conversion Successful")
 
-        for line in res["explanation"]:
-            st.info(line)
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("From", f"{res['amount']} {res['from']}")
+        col2.metric("To", f"{res['result']} {res['to']}")
+        col3.metric("Rate", res["rate"])
+
+        st.markdown("### 🌍 Currency Details")
+
+        full = model.get_currency_full_list()
+
+        st.write(full.get(res["from"], "Unknown"))
+        st.write(full.get(res["to"], "Unknown"))
+
+    except Exception as e:
+        st.error(str(e))
+
+
+# ---------------- FULL LIST ----------------
+st.subheader("🌐 Supported Currencies")
+
+for code, info in model.get_currency_full_list().items():
+    st.write(f"💱 **{code} → {info}**")
+
+
+# ---------------- EXPENSIVENESS ----------------
+st.subheader("📊 Expensiveness Index (Cheapest → Costliest)")
+
+data = model.get_expensiveness_data()
+
+df = pd.DataFrame({
+    "Currency": list(data.keys()),
+    "Index": list(data.values())
+}).sort_values("Index")
+
+fig = px.bar(
+    df,
+    x="Index",
+    y="Currency",
+    orientation="h",
+    title="Global Currency Strength Comparison"
+)
+
+st.plotly_chart(fig, use_container_width=True)
