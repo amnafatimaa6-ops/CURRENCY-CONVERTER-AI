@@ -6,7 +6,6 @@ import model
 st.set_page_config(page_title="Global FX Intelligence", layout="wide")
 
 st.title("🌍 Global Currency Intelligence Engine")
-
 st.markdown("Type like: **100 PKR to euro / 50 dollars to yen / 200 canada to rupees**")
 
 # ---------------- CONVERTER ----------------
@@ -18,9 +17,6 @@ if st.button("Convert 🚀"):
     try:
         res = model.convert_text(user_input)
 
-        from_country = model.get_currency_display_list().get(res["from"], "Unknown")
-        to_country = model.get_currency_display_list().get(res["to"], "Unknown")
-
         st.success("Conversion Successful")
 
         col1, col2, col3 = st.columns(3)
@@ -29,22 +25,24 @@ if st.button("Convert 🚀"):
         col2.metric("To", f"{res['result']} {res['to']}")
         col3.metric("Rate", res["rate"])
 
-        st.markdown("### 🌍 Currency Country Info")
+        st.markdown("### 🌍 Currency Information")
 
-        st.write(f"💱 **{res['from']} → {from_country}**")
-        st.write(f"💱 **{res['to']} → {to_country}**")
+        full_map = model.get_currency_full_list()
+
+        st.write(f"💱 **{res['from']} → {full_map.get(res['from'], 'Unknown')}**")
+        st.write(f"💱 **{res['to']} → {full_map.get(res['to'], 'Unknown')}**")
 
     except Exception as e:
         st.error(str(e))
 
 
-# ---------------- SUPPORTED CURRENCIES ----------------
-st.subheader("🌐 Supported Currencies")
+# ---------------- FULL CURRENCY LIST ----------------
+st.subheader("🌐 Supported Currencies (Full Names)")
 
-currency_map = model.get_currency_display_list()
+currency_map = model.get_currency_full_list()
 
-for code, country in currency_map.items():
-    st.write(f"💱 **{code} → {country}**")
+for code, full_info in currency_map.items():
+    st.write(f"💱 **{code} → {full_info}**")
 
 
 # ---------------- EXPENSIVENESS CHART ----------------
